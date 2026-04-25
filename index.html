@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="/level-up-yunseo/favicon.ico?v=1">
+<link rel="icon" href="/level-up-yeoul/favicon.ico?v=1">
 <title>윤서 육성 게임</title>
 
 <style>
@@ -148,9 +148,9 @@ body{
 <div class="modal" id="ending">
 <div class="modal-content">
 <h2>👑 엔딩 도달 👑</h2>
-<p>윤서를 독점했습니다. 저는 이제 당신의 것입니다.</p>
+<p>윤서를 독점했습니다. 저는 이제 트친님의 것입니다.</p>
 <hr>
-<p>제작: 나(밤새서만들다가잠)<br>아이디어: 시험기간의 광기<br>플레이어: YOU</p>
+<p>제작: 나(밤새서만들다가잠)<br>아이디어: 시험기간의 광기<br>플레이어: 티친</p>
 <br>
 <button onclick="restart()">다시하기</button>
 </div>
@@ -246,17 +246,15 @@ function closeShop(){document.getElementById('shop').style.display='none';}
 function buy(type){
 let price={love:1e12,apple:5e10,juice:2e10,curse:8e10,end:999e12};
 
-// 안전 체크
 if(price[type]===undefined){
 alert('잘못된 아이템');
 return;
 }
 
-// 숫자 강제 변환 (혹시 모를 오류 방지)
 money = Number(money);
 
 if(money < price[type]){
-alert('돈 더 벌어왘');
+alert('돈 더 벌어와');
 return;
 }
 
@@ -325,7 +323,6 @@ function startFireworks(){fireworkInterval=setInterval(createFirework,200);}
 function createFirework(){const f=document.createElement('div');f.style.position='fixed';f.style.left=Math.random()*window.innerWidth+'px';f.style.top=Math.random()*window.innerHeight+'px';f.style.width='6px';f.style.height='6px';f.style.borderRadius='50%';f.style.background=`hsl(${Math.random()*360},100%,60%)`;f.style.zIndex=9999;document.body.appendChild(f);setTimeout(()=>f.remove(),800);} 
 
 function restart(){money=1000000;level=0;items={love:0,apple:0,juice:0,curse:0,end:0};effects={shield:false,apple:0,curse:false};document.getElementById('ending').style.display='none';clearInterval(fireworkInterval);updateUI();}
-
 
 window.onload = () => {
   updateUI();
