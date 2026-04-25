@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/level-up-yunseo/favicon.ico?v=1">
+<title>윤서 육성 게임</title>
+
+<style>
+.item-img{width:40px;height:40px;border-radius:8px;object-fit:cover;}
+.game{width:100%;max-width:380px;height: 90dvh;;background:#fff;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 25px rgba(255,152,152,0.15);} 
+.header{display:flex;justify-content:space-between;align-items:center;padding:10px 15px;}
+.title{font-size:20px;font-weight:bold;}
+.header-buttons{display:flex;gap:6px;}
+.small-btn{background:#fba8ee;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;}
+#buffs{margin-top:6px;font-size:12px;color:#ff69b4;font-weight:bold;}
+.main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+.image-box img{
+  width:120%;
+  max-width:200px;
+  border-radius:12px;
+}
+.info{position:absolute;left:20px;top:20px;font-weight:bold;}
+.center-info{text-align:center;margin-top:10px;}
+.bottom-info{text-align:center;margin-top:5px;}
+.buttons{display:flex;justify-content:space-around;padding:10px;}
+.buttons button{width:30%;padding:12px;border:none;border-radius:12px;color:#fff;font-size:14px;}
+#feedBtn{background:#222;}#sellBtn{background:#ff7eb3;}#shopBtn{background:#8a4dff;}
+.shake{animation:shake .5s}
+@keyframes shake{0%{transform:translate(0)}25%{transform:translate(-10px,5px)}50%{transform:translate(10px,-5px)}75%{transform:translate(-8px,4px)}100%{transform:translate(0)}}
+.flash{animation:flash .4s}
+@keyframes flash{0%{background:#ff0000}100%{background:#ffeef5}}
+.bubble{position:absolute;top:0;background:#fff;padding:8px 12px;border-radius:10px;display:none;}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);display:none;justify-content:center;align-items:center;z-index:999;}
+.modal-content{background:#fff;padding:20px;border-radius:12px;width:80%;}
+small{color:#888;font-size:12px;}
+#ending{background:rgba(0,0,0,0.85);color:white;text-align:center;}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#fefbfd;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+</style>
+</head>
+<body>
+
+<!-- 상점 -->
+<div class="modal" id="shop">
+<div class="modal-content">
+
+<div style="display:flex;align-items:center;gap:8px;">
+<img src="images/love.png" class="item-img">
+<div>윤서의 사랑<br><small>실패 1회 방지</small></div>
+<div>1조 <button onclick="buy('love')">구매</button></div>
+</div><br>
+
+<div style="display:flex;align-items:center;gap:8px;">
+<img src="images/apple.png" class="item-img">
+<div>썩은 사과<br><small>성공률 +5%</small></div>
+<div>500억 <button onclick="buy('apple')">구매</button></div>
+</div><br>
+
+<div style="display:flex;align-items:center;gap:8px;">
+<img src="images/juice.png" class="item-img">
+<div>수상한 주스<br><small>랜덤 효과</small></div>
+<div>200억 <button onclick="buy('juice')">구매</button></div>
+</div><br>
+
+<div style="display:flex;align-items:center;gap:8px;">
+<img src="images/curse.png" class="item-img">
+<div>저주 인형<br><small>실패 시 돈 일부 보존</small></div>
+<div>800억 <button onclick="buy('curse')">구매</button></div>
+</div><br>
+
+<div style="display:flex;align-items:center;gap:8px;">
+<img src="images/end.png" class="item-img">
+<div>윤서 독점권<br><small>구매 시 게임 엔딩</small></div>
+<div>999조 <button onclick="buy('end')">구매</button></div>
+</div>
+
+<br>
+<button onclick="closeShop()">닫기</button>
+</div>
+</div>
+
+<div class="game" id="gameBox">
+<div class="header">
+<div class="title">윤서 성장 게임</div>
+<div class="header-buttons">
+<button class="small-btn" onclick="openInv()">🎒</button>
+<button class="small-btn" onclick="openHelp()">?</button>
+</div>
+</div>
+
+<div class="main">
+<div class="bubble" id="bubble"></div>
+<div class="info">
+먹이비용: <span id="cost"></span><br>
+판매가격: <span id="sellPrice"></span>
+</div>
+
+<div class="image-box">
+<img id="itemImage" src="images/0.png">
+</div>
+
+<div class="center-info">
+<h2>Lv.<span id="level">0</span> 윤서</h2>
+</div>
+
+<div class="bottom-info">
+확률 <span id="rate"></span>%<br>
+돈: <span id="money"></span>
+<div id="buffs">버프 없음</div>
+</div>
+</div>
+
+<div class="buttons">
+<button id="feedBtn" onclick="feed()">먹이</button>
+<button id="sellBtn" onclick="sell()">판매</button>
+<button id="shopBtn" onclick="openShop()">상점</button>
+</div>
+</div>
+
+<!-- 인벤 -->
+<div class="modal" id="inventory">
+<div class="modal-content">
+<h3>🎒 인벤토리</h3>
+<div id="invItems"></div>
+<br>
+<button onclick="closeInv()">닫기</button>
+</div>
+</div>
+
+<!-- 도움말 -->
+<div class="modal" id="help">
+<div class="modal-content">
+일단 아무 버튼이나 눌러 보세요. 시험 기간이라 미쳐서 만들었습니다... 엔딩 볼 수 있음 봐보세요ㅋ
+<br><br>
+<button onclick="closeHelp()">닫기</button>
+</div>
+</div>
+
+<!-- 엔딩 -->
+<div class="modal" id="ending">
+<div class="modal-content">
+<h2>👑 엔딩 도달 👑</h2>
+<p>윤서를 독점했습니다. 저는 이제 당신의 것입니다.</p>
+<hr>
+<p>제작: 나(밤새서만들다가잠)<br>아이디어: 시험기간의 광기<br>플레이어: YOU</p>
+<br>
+<button onclick="restart()">다시하기</button>
+</div>
+</div>
+
+<script>
+let money=1000000;
+let level=0;
+let baseCost=1000;
+
+let effects = {
+  shield: false,
+  apple: 0,
+  curse: false
+};
+
+let items={love:0,apple:0,juice:0,curse:0,end:0};
+
+const messages=[
+"배고파!!! 아아악!!! 배고프다고!!!",
+"밥 내놔!!!",
+"나 굶어? 굶냐고 밥 내놔!!!",
+"밥!!!",
+"후우웅 윤서 배고파 밥줘엉"
+];
+
+function getCost(){return Math.floor(baseCost*Math.pow(level+1,2));}
+function getSellPrice(){return Math.floor(getCost()*Math.pow(10,level));}
+function getSuccessRate(){let base= level===0?100: level<10?Math.max(60,100-level*4): level<=15?Math.max(5,60-(level-10)*11):5; return Math.min(100, base+effects.apple);} 
+
+function feed(){
+let cost=getCost();
+if(money<cost){alert('돈 부족');return;}
+
+money-=cost;
+
+if(Math.random()*100<getSuccessRate()){
+level++;
+showBubble();
+}else{
+if(effects.shield){effects.shield=false;}else{level=0;}
+if(effects.curse){money+=Math.floor(cost*0.5);effects.curse=false;}
+let box=document.getElementById('gameBox');
+box.classList.add('shake');
+document.body.classList.add('flash');
+setTimeout(()=>{box.classList.remove('shake');document.body.classList.remove('flash');},400);
+}
+
+updateUI();
+}
+
+function sell(){money+=getSellPrice();level=0;updateUI();}
+
+function showBubble(){const b=document.getElementById('bubble');b.innerText=messages[Math.floor(Math.random()*messages.length)];b.style.display='block';setTimeout(()=>b.style.display='none',2000);} 
+
+function formatMoney(n){if(n>=1e12)return(n/1e12).toFixed(1)+'조';if(n>=1e8)return(n/1e8).toFixed(1)+'억';if(n>=1e4)return(n/1e4).toFixed(1)+'만';return n.toLocaleString();}
+
+function updateBackground(){
+let pink=240-Math.min(level*5,80);
+document.body.style.background=`rgb(255,${pink},${pink})`;
+}
+
+function updateUI(){
+document.getElementById('money').innerText = formatMoney(money);
+document.getElementById('level').innerText = level;
+document.getElementById('cost').innerText = formatMoney(getCost());
+document.getElementById('sellPrice').innerText = formatMoney(getSellPrice());
+document.getElementById('rate').innerText = getSuccessRate().toFixed(2);
+
+const img = document.getElementById('itemImage');
+
+// 🔥 항상 먼저 fallback 설정
+img.onerror = () => {
+  img.onerror = null; // 무한루프 방지
+  img.src = 'images/default.png';
+};
+
+// 🔥 레벨 이미지 시도
+img.src = 'images/' + level + '.png';
+
+updateBackground();
+
+let text='';
+if(effects.shield) text+='💖 보호막 ON<br>';
+if(effects.curse) text+='👻 저주 보호 ON<br>';
+if(effects.apple>0) text+=`🍎 확률 +${effects.apple}%`;
+document.getElementById('buffs').innerHTML=text||'버프 없음';
+}
+
+function openShop(){document.getElementById('shop').style.display='flex';}
+function closeShop(){document.getElementById('shop').style.display='none';}
+
+function buy(type){
+let price={love:1e12,apple:5e10,juice:2e10,curse:8e10,end:999e12};
+
+// 안전 체크
+if(price[type]===undefined){
+alert('잘못된 아이템');
+return;
+}
+
+// 숫자 강제 변환 (혹시 모를 오류 방지)
+money = Number(money);
+
+if(money < price[type]){
+alert('돈 더 벌어왘');
+return;
+}
+
+money -= price[type];
+items[type]++;
+
+if(type==='end'){
+showEnding();
+}
+
+alert('구매 완료!');
+updateUI();
+}
+
+function openInv(){document.getElementById('inventory').style.display='flex';renderInventory();}
+function closeInv(){document.getElementById('inventory').style.display='none';}
+function openHelp(){document.getElementById('help').style.display='flex'}
+function closeHelp(){document.getElementById('help').style.display='none'}
+
+function renderInventory(){
+const c=document.getElementById('invItems');
+c.innerHTML='';
+const names={love:'윤서의 사랑',apple:'썩은 사과',juice:'수상한 주스',curse:'저주 인형'};
+for(let k in items){
+if(items[k]>0&&k!=='end'){
+c.innerHTML+=`${names[k]} x ${items[k]} <button onclick="useItem('${k}')">사용</button><br>`;
+}
+}
+if(c.innerHTML==='') c.innerHTML='아이템 없음';
+}
+
+function useItem(type){
+if(items[type]<=0)return;
+items[type]--;
+
+if(type==='love'){
+if(effects.shield){alert('이미 보호막 있음!');items[type]++;return;}
+effects.shield=true;
+alert('💖 보호막 활성화! 💖');
+}
+
+if(type==='apple'){
+if(effects.apple>=20){alert('이미 최대 강화!');items[type]++;return;}
+effects.apple+=5;
+alert('성공률 +5%!');
+}
+
+if(type==='curse'){
+effects.curse=true;
+alert('다음 실패 시 돈 보호!');
+}
+
+if(type==='juice'){
+let r=Math.random();
+if(r<0.33){level++;alert('✨ 레벨 상승! ✨');}
+else if(r<0.66){money*=2;alert('💰 돈 2배! 💰');}
+else{level=0;alert('💀 레벨 초기화 ㅋ 💀');}
+}
+
+renderInventory();updateUI();
+}
+
+let fireworkInterval;
+function showEnding(){document.getElementById('ending').style.display='flex';startFireworks();}
+function startFireworks(){fireworkInterval=setInterval(createFirework,200);}
+function createFirework(){const f=document.createElement('div');f.style.position='fixed';f.style.left=Math.random()*window.innerWidth+'px';f.style.top=Math.random()*window.innerHeight+'px';f.style.width='6px';f.style.height='6px';f.style.borderRadius='50%';f.style.background=`hsl(${Math.random()*360},100%,60%)`;f.style.zIndex=9999;document.body.appendChild(f);setTimeout(()=>f.remove(),800);} 
+
+function restart(){money=1000000;level=0;items={love:0,apple:0,juice:0,curse:0,end:0};effects={shield:false,apple:0,curse:false};document.getElementById('ending').style.display='none';clearInterval(fireworkInterval);updateUI();}
+
+
+window.onload = () => {
+  updateUI();
+};
+</script>
+
+</body>
+</html>
